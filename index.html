@@ -124,7 +124,8 @@ h1, h2 {
     <button onclick="startSimulation()">START</button>  
     <div class="timer" id="timerDisplay"></div>  
     <div class="log" id="logBox"></div>  
-  </div>    <script>  
+  </div>    
+  <script>  
 const certifiedUsers = [  
   { name: "Admin", pass: "Bomva" },  
   { name: "Dave", pass: "Gwapo" },  
@@ -177,66 +178,88 @@ function togglePassword() {
   pw.type = pw.type === "password" ? "text" : "password";  
 }  
   
-function showValidUsers() {  
-  const visibleUsers = certifiedUsers.filter(u => u.name !== "Admin").map(u => u.name);  
   
-  const oldPopup = document.getElementById("validUsersPopup");  
-  if (oldPopup) oldPopup.remove();  
   
-  const popup = document.createElement("div");  
-  popup.id = "validUsersPopup";  
-  Object.assign(popup.style, {  
-    position: "fixed",  
-    bottom: "20px",  
-    right: "20px",  
-    background: "#03182f",  
-    color: "#00bfff",  
-    padding: "15px",  
-    borderRadius: "10px",  
-    border: "1px solid #00bfff",  
-    boxShadow: "0 0 10px #00bfff",  
-    maxHeight: "200px",  
-    overflowY: "auto",  
-    zIndex: "9999",  
-    width: "200px"  
-  });  
-  
-  const closeBtn = document.createElement("div");  
-  closeBtn.textContent = "✖";  
-  Object.assign(closeBtn.style, {  
-    position: "absolute",  
-    top: "5px",  
-    right: "10px",  
-    cursor: "pointer",  
-    fontWeight: "bold",  
-    color: "#ff6666"  
-  });  
-  closeBtn.onclick = () => popup.remove();  
-  
-  const title = document.createElement("div");  
-  title.textContent = "📜 Valid Users";  
-  title.style.fontWeight = "bold";  
-  title.style.marginBottom = "10px";  
-  
-  popup.appendChild(closeBtn);  
-  popup.appendChild(title);  
-  
-  visibleUsers.forEach(user => {  
-    const userLine = document.createElement("div");  
-    userLine.textContent = "• " + user;  
-    popup.appendChild(userLine);  
-  });  
-  
-  document.body.appendChild(popup);  
-}  
-  
-function login() {  
-  const inputName = document.getElementById("username").value.trim();  
-  const inputPass = document.getElementById("password").value.trim();  
-  const loginMessage = document.getElementById("loginMessage");  
-  const found = certifiedUsers.find(u => u.name === inputName && u.pass === inputPass);  
-  
-  if (!found) return loginMessage.textContent = "❌ Invalid credentials.";  
+function login() {
+  const inputName = document.getElementById("username").value.trim();
+  const inputPass = document.getElementById("password").value.trim();
+  const loginMessage = document.getElementById("loginMessage");
+
+  // Make it case-insensitive for username
+  const found = certifiedUsers.fifunction showValidUsers() {
+  const visibleUsers = certifiedUsers.filter(u => u.name !== "Admin").map(u => u.name);
+
+  const existing = document.getElementById("validUsersPopup");
+  if (existing) {
+    existing.remove(); // if already open, remove it
+    return;            // toggle behavior
+  }
+
+  const popup = document.createElement("div");
+  popup.id = "validUsersPopup";
+  Object.assign(popup.style, {
+    position: "fixed",
+    top: "20px",
+    right: "20px",
+    background: "#03182f",
+    color: "#00bfff",
+    padding: "15px",
+    borderRadius: "10px",
+    border: "1px solid #00bfff",
+    boxShadow: "0 0 10px #00bfff",
+    maxHeight: "300px",
+    overflowY: "auto",
+    zIndex: "9999",
+    width: "220px"
+  });
+
+  const closeBtn = document.createElement("div");
+  closeBtn.textContent = "✖";
+  Object.assign(closeBtn.style, {
+    position: "absolute",
+    top: "5px",
+    right: "10px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    color: "#ff6666"
+  });
+  closeBtn.onclick = () => popup.remove();
+
+  const title = document.createElement("div");
+  title.textContent = "📜 Valid Users";
+  title.style.fontWeight = "bold";
+  title.style.marginBottom = "10px";
+
+  popup.appendChild(closeBtn);
+  popup.appendChild(title);
+
+  visibleUsers.forEach(user => {
+    const userLine = document.createElement("div");
+    userLine.textContent = "• " + user;
+    popup.appendChild(userLine);
+  });
+
+  document.body.appendChild(popup);
+  }nd(
+    u => u.name.toLowerCase() === inputName.toLowerCase() &&
+         u.pass === inputPass
+  );
+
+  if (!found) {
+    loginMessage.textContent = "❌ Invalid credentials.";
+    return;
+  }
+
+  loginMessage.textContent = ""; // clear error
+  currentUser = found.name;
+  document.getElementById("login-section").style.display = "none";
+  document.getElementById("main-section").style.display = "block";
+  updateChancesDisplay();
+
+  if (currentUser === "Admin") {
+    // (admin tools here if you have)
+  }
+    }
   
   currentUser = found.name;  
   document.getElementById("login-section").style.display = "none";  
