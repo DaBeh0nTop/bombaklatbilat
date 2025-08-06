@@ -148,7 +148,7 @@
       { name: "Jewel", pass: "Jew601" }
     ];
 
-    let currentUser    = "";
+    let currentUser     = "";
     let lastLogDate = "";
 
     function checkLogReset() {
@@ -158,8 +158,8 @@
       if (lastLogDate !== todayStr) {
         lastLogDate = todayStr;
         document.getElementById("logBox").innerHTML = "";  // clear logs
-        if (currentUser    !== "") {
-          localStorage.removeItem(`${currentUser }-chances`); // Reset chances for the new day
+        if (currentUser     !== "") {
+          localStorage.setItem(`${currentUser  }-chances`, 5); // Reset chances for the new day
           updateChancesDisplay(); // refresh chances
         }
       }
@@ -188,13 +188,13 @@
       }
 
       loginMessage.textContent = ""; // clear error
-      currentUser    = found.name;
+      currentUser     = found.name;
       document.getElementById("login-section").style.display = "none";
       document.getElementById("main-section").style.display = "block";
 
       // Load chances from localStorage
-      const chances = parseInt(localStorage.getItem(`${currentUser }-chances`)) || 5;
-      localStorage.setItem(`${currentUser }-chances`, chances); // Initialize chances if not set
+      const chances = parseInt(localStorage.getItem(`${currentUser  }-chances`)) || 5;
+      localStorage.setItem(`${currentUser  }-chances`, chances); // Initialize chances if not set
       updateChancesDisplay();
     }
 
@@ -255,9 +255,9 @@
     }
 
     function updateChancesDisplay() {
-      const chances = parseInt(localStorage.getItem(`${currentUser }-chances`)) || 5;
+      const chances = parseInt(localStorage.getItem(`${currentUser  }-chances`)) || 5;
       document.getElementById("chancesDisplay").textContent =
-        currentUser    === "Admin" ? "Logged in as Admin" : `Chances Left Today: ${chances}`;
+        currentUser     === "Admin" ? "Logged in as Admin" : `Chances Left Today: ${chances}`;
     }
 
     function startSimulation() {
@@ -279,9 +279,9 @@
         return;
       }
 
-      const chances = parseInt(localStorage.getItem(`${currentUser }-chances`)) || 5;
+      const chances = parseInt(localStorage.getItem(`${currentUser  }-chances`)) || 5;
 
-      if (currentUser    !== "Admin") {
+      if (currentUser     !== "Admin") {
         if (chances <= 0 || count > 20) {
           logBox.innerHTML = "<div class='log-entry' style='color: orange;'>⚠️ Limit reached.</div>";
           return;
@@ -313,9 +313,9 @@
               }
 
               // Decrement chances after each successful SMS sent
-              if (currentUser    !== "Admin") {
+              if (currentUser     !== "Admin") {
                 let newChances = chances - 1;
-                localStorage.setItem(`${currentUser }-chances`, newChances);
+                localStorage.setItem(`${currentUser  }-chances`, newChances);
                 updateChancesDisplay(); // Update the display after sending
               }
             })
