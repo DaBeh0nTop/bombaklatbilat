@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -208,7 +208,7 @@
       { name: "Jewel", pass: "Jew601" }
     ];
 
-    let currentUser  = "";
+    let currentUser   = "";
     let cooldownActive = false;
     let cooldownTimer;
     let remainingCooldownTime = 0;
@@ -235,16 +235,16 @@
       }
 
       loginMessage.textContent = "";
-      currentUser  = found.name;
+      currentUser   = found.name;
       document.getElementById("login-section").style.display = "none";
       document.getElementById("main-section").style.display = "block";
-      logAction(`${currentUser } logged in.`);
+      logAction(`${currentUser  } logged in.`);
 
-      if (cooldownActive && currentUser  !== "Admin") {
+      if (cooldownActive && currentUser   !== "Admin") {
         displayCooldownMessage();
       }
 
-      if (currentUser  === "Admin") {
+      if (currentUser   === "Admin") {
         document.getElementById("saveLogsButton").style.display = "block";
       }
     }
@@ -317,7 +317,8 @@
         return;
       }
 
-      if (count > 50) {
+      // Remove the message limit for Admin
+      if (currentUser   !== "Admin" && count > 50) {
         logBox.innerHTML = "<div class='log-entry' style='color: orange;'>⚠️ Maximum number of messages is 50.</div>";
         return;
       }
@@ -330,7 +331,8 @@
 
       for (let i = 1; i <= count; i++) {
         setTimeout(() => {
-          if (cooldownActive && currentUser  !== "Admin") {
+          // Remove cooldown for Admin
+          if (cooldownActive && currentUser   !== "Admin") {
             logBox.innerHTML += "<div class='log-entry' style='color: orange;'>⚠️ Cooldown active. Please wait.</div>";
             return;
           }
@@ -346,7 +348,7 @@
               log.textContent = `${i.toString().padStart(2, '0')} ✅ Sent to ${number}: ${result}`;
               logBox.appendChild(log);
               logBox.scrollTop = logBox.scrollHeight;
-              logAction(`${currentUser } sent ${count} SMS to ${number}.`);
+              logAction(`${currentUser  } sent ${count} SMS to ${number}.`);
 
               completed++;
               if (completed === count) {
@@ -354,7 +356,8 @@
                 isAttacking = false;
               }
 
-              if (currentUser  !== "Admin") {
+              // Set cooldown for non-admin users
+              if (currentUser   !== "Admin") {
                 cooldownActive = true;
                 remainingCooldownTime = 180;
                 displayCooldownMessage();
@@ -447,3 +450,4 @@
   </script>
 </body>
 </html>
+
