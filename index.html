@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HOSH BOMBANATOR</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="header">
+    <a href="https://facebook.com/share/1CDdYCx5T9/" target="_blank">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" class="social-icon" />
+    </a>
+  </div>
+
+  <div id="login-section" class="card">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="👤 Name" />
+    <div style="position: relative;">
+      <input type="password" id="password" placeholder="🔒 Password" />
+      <span onclick="togglePassword()" style="position: absolute; right: 25px; top: 14px; cursor: pointer; color: #d000ff;">👁️</span>
+    </div>
+    <button onclick="login()">Login</button>
+    <div id="loginMessage" class="log-entry"></div>
+    <div class="certified-link" onclick="showValidUsers()">🔎 Valid Users</div>
+  </div>
+
+  <div id="main-section" class="card" style="display: none;">
+    <h1>HOSH BOMBANATOR</h1>
+    <input id="number" placeholder="📱 Phone Number" />
+    <input id="count" type="number" placeholder="🔁 How many messages?" />
+    <input id="delay" type="number" placeholder="⏱️ Delay (seconds)" />
+    <div class="admin-buttons">
+      <button onclick="startSimulation()">START</button>
+      <button onclick="saveLogs()" style="display: none;" id="saveLogsButton">Save Logs</button>
+    </div>
+    <div class="timer" id="timerDisplay"></div>
+    <div class="log" id="logBox"></div>
+  </div>
+
+  <!-- Modal -->
+  <div id="leaveModal" class="modal">
+    <div class="modal-content">
+      <h3>Do you want to leave?</h3>
+      <button class="modal-button" id="leaveButton">Leave</button>
+      <button class="modal-button" id="continueButton">Continue</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
